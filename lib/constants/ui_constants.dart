@@ -13,4 +13,12 @@ class UiConstants{
         centerTitle: true,
     );
   }
+
+ static List<Widget> bottomTabBarPage = const[
+            Text("Feed Screen"),
+            Text("Search Screen"),
+            Text("Notification Screen"),
+
+ ];
+
 }
