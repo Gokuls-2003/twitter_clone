@@ -29,15 +29,13 @@ final authControllerProvider = StateNotifierProvider<AuthController, bool>((ref)
 
 // //66715fb46a4c26d7adc
 final currentUserDetailsProvider = FutureProvider((ref) {
-    final currentUserId = ref.watch(currentUserAccountProvider).value!.$id; 
-    print(currentUserId); 
+    final currentUserId = ref.watch(currentUserAccountProvider).value!.$id;
     final userDetails = ref.watch(userDetailsProvider(currentUserId));
     return userDetails.value;
 });
 
 final userDetailsProvider = FutureProvider.family((ref, String uid)  {
   final authController = ref.watch(authControllerProvider.notifier);
-  print(authController.getUserData(uid));
   return authController.getUserData(uid);
 });
 
@@ -51,7 +49,7 @@ class AuthController extends StateNotifier<bool>{
   final UserAPI _userAPI;
   AuthController({
     required AuthAPI authAPI,
-     required UserAPI userAPI 
+     required UserAPI userAPI
      }) : _authAPI =authAPI,
           _userAPI = userAPI,
       super(false);
@@ -81,7 +79,7 @@ class AuthController extends StateNotifier<bool>{
             profilePic: '',
             bannerPic: '',
             uid: r.$id,
-            bio: '', 
+            bio: '',
             isTwitterBlue: false
             );
           final res2 = await  _userAPI.saveUserData(userModel);
