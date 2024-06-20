@@ -13,7 +13,7 @@ class HashtagText extends StatelessWidget {
       if(element.startsWith('#')){
         textspans.add(
           TextSpan(
-            text: '$element',
+            text: '$element ',
             style: const TextStyle(
               color: Pallete.blueColor,
               fontSize: 18,
@@ -22,12 +22,24 @@ class HashtagText extends StatelessWidget {
           )
         );
       }else if(element.startsWith('www.') || element.startsWith('https://')){
+        textspans.add(
         TextSpan(
-            text: '$element',
+            text: '$element ',
             style: const TextStyle(
               color: Pallete.blueColor,
               fontSize: 18,
             )
+        )
+          );
+         
+      }else{
+        textspans.add(
+        TextSpan(
+            text: '$element ',
+            style: const TextStyle(
+              fontSize: 18,
+            )
+        )
           );
       }
     });
