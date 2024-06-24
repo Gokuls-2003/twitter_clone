@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clone/common/common.dart';
+import 'package:twitter_clone/constants/appwrite_constants.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
+import 'package:twitter_clone/features/tweet/controller/tweet_controller.dart';
+import 'package:twitter_clone/features/tweet/widgets/tweet_cart.dart';
+import 'package:twitter_clone/features/user_profile/contoller/user_profile_controller.dart';
+import 'package:twitter_clone/features/user_profile/view/edit_profile_view.dart';
 import 'package:twitter_clone/features/user_profile/view/user_profile_view.dart';
 import 'package:twitter_clone/features/user_profile/widget/follow_count.dart';
+import 'package:twitter_clone/models/tweet_model.dart';
 import 'package:twitter_clone/models/user_model.dart';
 import 'package:twitter_clone/theme/pallate.dart';
 
@@ -31,7 +37,7 @@ class UserProfile extends ConsumerWidget {
                   child: user.bannerPic.isEmpty ? Container(
                   color: Pallete.blueColor,
                  ) 
-                 : Image.network(user.bannerPic) ),
+                 : Image.network(user.bannerPic, fit: BoxFit.fitWidth,) ),
                  Positioned(
                   bottom:10,
                   left: 10,
@@ -44,7 +50,11 @@ class UserProfile extends ConsumerWidget {
                   alignment: Alignment.bottomRight,
                   margin:  EdgeInsets.all(20),
                    child: OutlinedButton(
-                    onPressed: (){},
+                    onPressed: (){
+                      if(currentUser.uid == user.uid){
+                        Navigator.push(context, EditProfileView.route());
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -103,7 +113,77 @@ class UserProfile extends ConsumerWidget {
             )
          ];
       },
-      body: Container()
+      body: ref.watch(getUserTweetsProvider(user.uid)).when(
+        data: (tweets){
+            return ref.watch(getLatestTweetProvider).when(
+              data: (data){
+                print(data);
+
+                final latestTweet = Tweet.fromMap(data.payload);
+
+                bool isTweetAlreadyPresent = false;
+                for(final tweetModel in tweets){
+                  if(tweetModel.id == latestTweet.id){
+                    isTweetAlreadyPresent=true;
+                    break;
+                  }
+                }
+                if(!isTweetAlreadyPresent){
+                  if(data.events.contains(
+                  'databases.*.collections.${AppWriteConstants.tweetscollection}.documents.*.create'
+                  )){
+                    tweets.insert(0, Tweet.fromMap(data.payload));
+                  }else if(data.events.contains(
+                  'databases.*.collections.${AppWriteConstants.tweetscollection}.documents.*.update'
+                  )) {
+                    
+                    final startingPoint = data.events[0].lastIndexOf('documents.');
+                    
+                    final endingPoint = data.events[0].lastIndexOf('.update');
+
+                    final tweetId = data.events[0].substring(startingPoint + 10, endingPoint);
+
+                    var tweet = tweets
+                      .where((element) => element.id == tweetId)  
+                      .first;
+              
+                    final tweetIndex = tweets.indexOf(tweet);
+                    tweets.removeWhere((element) => element.id == tweetId);
+
+                    tweet = Tweet.fromMap(data.payload);
+                    tweets.insert(tweetIndex, tweet);
+                  }
+                }
+                
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: tweets.length  ,
+                      itemBuilder: (BuildContext context, int index){
+                        final tweet = tweets[index];
+                        return TweetCart(tweet: tweet);
+                                  }
+                                  ),
+                  );
+              },
+                error: (error, stackTrace) => 
+              ErrorText(error: error.toString()),
+              loading: (){
+                return Expanded(
+                  child: ListView.builder(
+                      itemCount: tweets.length  ,
+                      itemBuilder: (BuildContext context, int index){
+                        final tweet = tweets[index];
+                        return TweetCart(tweet: tweet);
+                                }
+                                ),
+                );
+              }
+           ); 
+        },
+        error: (error, st) => ErrorText(
+          error: error.toString()
+        ),
+         loading:() => Loader())
     );
   }
 }
