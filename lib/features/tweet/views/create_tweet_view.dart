@@ -42,7 +42,8 @@ class _CreateTweetScreenState extends ConsumerState<CreateTweetScreen> {
        .shareTweet(
         images: images,
         text: tweetTextController.text,
-        context: context
+        context: context,
+        repliedTo: '',
         );
         Navigator.pop(context);
   }
@@ -106,7 +107,7 @@ class _CreateTweetScreenState extends ConsumerState<CreateTweetScreen> {
                   (file){
                      return Container(
                       width: MediaQuery.of(context).size.width,
-                      margin: EdgeInsets.symmetric(horizontal: 5),
+                      margin: const EdgeInsets.symmetric(horizontal: 5),
                       child: Image.file(file));
                      },
                   ).toList(),
