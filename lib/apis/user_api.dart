@@ -13,6 +13,7 @@ final userAPIProvider = Provider((ref){
   final user = ref.watch(appwriteDatabasesProvider);
    return UserAPI(
     db: user,
+    realTime: ref.watch(appwriteRealtimeProvider)
     );
 });
 
@@ -21,11 +22,15 @@ abstract class IUserAPI{
   Future<model.Document> getUserData(String uid);
   Future<List<model.Document>> searchUserByName(String name);
   FutureEitherVoid updateUserData(UserModel userModel);
+  Stream<RealtimeMessage> getLatestUserProfileData();
+  FutureEitherVoid followUser(UserModel user);
+  FutureEitherVoid addToFollowing(UserModel user);
 }
 
 class UserAPI implements IUserAPI{
   final Databases _db;
-  UserAPI({required Databases db}) : _db = db;
+  final Realtime _realTime;
+  UserAPI({required Databases db, required Realtime realTime}) : _db = db, _realTime = realTime;
   @override
   FutureEitherVoid saveUserData(UserModel userModel) async {
     try {
@@ -92,9 +97,63 @@ class UserAPI implements IUserAPI{
         return left(
           Failure(e.toString(), st)
         );
-      
     }
-    
   }
-
+  
+  @override
+  Stream<RealtimeMessage> getLatestUserProfileData() {
+    return _realTime.subscribe([
+      'databases.${AppWriteConstants.databaseId}.collections.${AppWriteConstants.userscollection}.documents'
+    ]).stream;
+  }
+  
+  @override
+  FutureEitherVoid followUser(UserModel user) async {
+    try {
+       await _db.updateDocument(
+        databaseId: AppWriteConstants.databaseId,
+        collectionId: AppWriteConstants.userscollection,
+        documentId: user.uid,
+        data: {
+          "followers" : user.followers
+        }
+      );
+      return right(null);
+    }on AppwriteException catch(e, st){
+      return left(
+        Failure(
+          e.message?? 'Some unexpected error occur ', st
+          )
+        );
+      }catch (e, st) {
+        return left(
+          Failure(e.toString(), st)
+        );
+    }
+  }
+  
+  @override
+  FutureEitherVoid addToFollowing(UserModel user) async {
+     try {
+       await _db.updateDocument(
+        databaseId: AppWriteConstants.databaseId,
+        collectionId: AppWriteConstants.userscollection,
+        documentId: user.uid,
+        data: {
+          "following" : user.following
+        }
+      );
+      return right(null);
+    }on AppwriteException catch(e, st){
+      return left(
+        Failure(
+          e.message?? 'Some unexpected error occur ', st
+          )
+        );
+      }catch (e, st) {
+        return left(
+          Failure(e.toString(), st)
+        );
+    }
+  }
 }

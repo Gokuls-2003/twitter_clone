@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clone/apis/storage_api.dart';
@@ -19,6 +20,11 @@ final userProfileControllerProvider = StateNotifierProvider<UserProfileControlle
 final getUserTweetsProvider = FutureProvider.family((ref, String uid) async {
   final UserProfileController = await ref.watch(userProfileControllerProvider.notifier);
   return UserProfileController.getUserTweets(uid);
+});
+
+final getLatestUserProfileProvider = StreamProvider((ref) {
+  final userAPI = ref.watch(userAPIProvider);
+  return userAPI.getLatestUserProfileData();
 });
 
 class UserProfileController extends StateNotifier<bool> {
@@ -62,5 +68,31 @@ class UserProfileController extends StateNotifier<bool> {
       (l) => ShowSnackBar(context, l.message),
       (r) => Navigator.pop(context),
      );
+  }
+
+  void followUser({
+    required UserModel user,
+    required BuildContext context,
+    required UserModel currentUser,
+  })async {
+    if(currentUser.following.contains(user.uid)){
+      user.followers.remove(currentUser.uid);
+      currentUser.following.remove(user.uid);
+    }else{
+      user.followers.add(currentUser.uid);
+      currentUser.following.add(user.uid);
+    }
+    user = user.copyWith(followers: user.followers);
+    currentUser = currentUser.copyWith(
+      following: currentUser.following,
+    );
+
+    final res = await _userAPI.followUser(user);
+    res.fold(
+      (l) => ShowSnackBar(context, l.message),
+      (r) async {
+       final res2 = await _userAPI.addToFollowing(currentUser);
+       res.fold((l) => ShowSnackBar(context, l.message), (r) => null);
+      });
   }
 }
