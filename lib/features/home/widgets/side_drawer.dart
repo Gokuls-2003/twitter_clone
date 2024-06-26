@@ -58,7 +58,9 @@ class SideDrawer extends ConsumerWidget {
                 title: Text("Log out", style: TextStyle(
                   fontSize: 22
                 ),),
-                onTap: (){ },
+                onTap: (){
+                  ref.read(authControllerProvider.notifier).logout(context);
+                 },
             )
           ],
         ),
