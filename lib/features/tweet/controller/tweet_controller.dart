@@ -45,6 +45,12 @@ final getTweetByIdProvider = FutureProviderFamily((ref, String id) async{
   return tweetController.getTweetById(id);    
 });
 
+final getTweetsByHashtagProvider = FutureProviderFamily((ref, String hashtag) async{
+  final tweetController = ref.watch(tweetControllerProvider.notifier);
+  return tweetController.getTweetsByHashtags(hashtag);    
+});
+
+
 
 class TweetController extends StateNotifier<bool> {
   final TweetAPI _tweetAPI;
@@ -160,6 +166,12 @@ class TweetController extends StateNotifier<bool> {
     final documents = await _tweetAPI.getRepliesToTweet(tweet);
     return documents.map((tweet) => Tweet.fromMap(tweet.data)).toList();
   }
+  
+  Future<List<Tweet>> getTweetsByHashtags(String hashtag) async {
+    final documents = await _tweetAPI.getTweetsByHashtags(hashtag );
+    return documents.map((tweet) => Tweet.fromMap(tweet.data)).toList();
+  }
+
   void _shareImageTweet({
     required List<File> images,
     required String text,
