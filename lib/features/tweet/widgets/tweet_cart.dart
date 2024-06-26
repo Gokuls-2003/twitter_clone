@@ -78,13 +78,18 @@ class TweetCart extends ConsumerWidget {
                             Row(
                               children: [
                                 Container(
-                                  margin: const EdgeInsets.only(right: 5),
+                                  margin: EdgeInsets.only(right: user.isTwitterBlue ? 1 : 5),
                                   child: Text(
                                     user.name,
                                     style:const TextStyle(
                                        fontWeight: FontWeight.bold,
                                         fontSize: 19
                                         ),),
+                                ),
+                                if(user.isTwitterBlue)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 5.0),
+                                  child: SvgPicture.asset(AssetsConstants.verifiedIcon),
                                 ),
                                 Text(
                                     '@${user.name} . ${timeago.format(
