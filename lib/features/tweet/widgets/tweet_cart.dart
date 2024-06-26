@@ -166,7 +166,7 @@ class TweetCart extends ConsumerWidget {
                                        onTap: (isLiked) async {
                                         ref.read(
                                           tweetControllerProvider.notifier)
-                                          .likeTweet(tweet, user);
+                                          .likeTweet(tweet, currentUser);
                                         return isLiked; 
                                        },
                                        isLiked: tweet.likes.contains(currentUser.uid),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:twitter_clone/enum/notification_type_enum.dart';
 
 class AppNotification {
@@ -6,7 +8,6 @@ class AppNotification {
   final String id;
   final String uid;
   final NotificationType notificationType;
-
   AppNotification({
     required this.text,
     required this.postId,
@@ -14,6 +15,7 @@ class AppNotification {
     required this.uid,
     required this.notificationType,
   });
+  
 
   AppNotification copyWith({
     String? text,
@@ -32,26 +34,28 @@ class AppNotification {
   }
 
   Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    result.addAll({'text': text});
-    result.addAll({'postId': postId});
-    result.addAll({'id': id}); // Include id
-    result.addAll({'uid': uid});
-    result.addAll({'notificationType': notificationType.type});
-
-    return result;
+    return {
+      'text': text,
+      'postId': postId,
+      // 'id': id,
+      'uid': uid,
+      'notificationType': notificationType.type,
+    };
   }
 
   factory AppNotification.fromMap(Map<String, dynamic> map) {
     return AppNotification(
       text: map['text'] ?? '',
       postId: map['postId'] ?? '',
-      id: map['\$id'] ?? '', // Changed to handle Appwrite ID field correctly
+      id: map['\$id'] ?? '',
       uid: map['uid'] ?? '',
       notificationType: (map['notificationType'] as String).toNotificationTypeEnum(),
     );
   }
+
+  String toJson() => json.encode(toMap());
+
+  factory AppNotification.fromJson(String source) => AppNotification.fromMap(json.decode(source));
 
   @override
   String toString() {
@@ -61,21 +65,21 @@ class AppNotification {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
+  
     return other is AppNotification &&
-        other.text == text &&
-        other.postId == postId &&
-        other.id == id &&
-        other.uid == uid &&
-        other.notificationType == notificationType;
+      other.text == text &&
+      other.postId == postId &&
+      other.id == id &&
+      other.uid == uid &&
+      other.notificationType == notificationType;
   }
 
   @override
   int get hashCode {
     return text.hashCode ^
-        postId.hashCode ^
-        id.hashCode ^
-        uid.hashCode ^
-        notificationType.hashCode;
+      postId.hashCode ^
+      id.hashCode ^
+      uid.hashCode ^
+      notificationType.hashCode;
   }
 }
